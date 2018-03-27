@@ -1,0 +1,41 @@
+[DeviceName]
+Value=P16F883
+[DeviceClock]
+Value=4
+[MainUnit]
+Value=ADC_USART.c
+[DeviceFlags]
+Count=12
+Value0=_INTOSCIO = $3FFC
+Value1=_WDT_OFF = $3FF7
+Value2=_PWRTE_ON = $3FEF
+Value3=_MCLRE_OFF = $3FDF
+Value4=_CP_OFF = $3FFF
+Value5=_CPD_OFF = $3FFF
+Value6=_BOR_OFF = $3CFF
+Value7=_IESO_OFF = $3BFF
+Value8=_FCMEN_OFF = $37FF
+Value9=_LVP_OFF = $2FFF
+Value10=_DEBUG_OFF = $3FFF
+Value11=_WRT_OFF = $3FFF
+[BuildType]
+bType=0
+[ProjectFiles]
+Count=1
+Value0=openKeyboard.c
+[HeaderFiles]
+Count=0
+[ObjLibFiles]
+Count=0
+[PLDFiles]
+Count=0
+[EEPROMinfo]
+isused=0
+[SearchPath]
+Count=4
+Value0=C:\Programmi\Mikroelektronika\mikroC\Defs\
+Value1=C:\Programmi\Mikroelektronika\mikroC\Uses\p16\
+Value2=D:\DEVELOPMENT\PROJECTS\micros\openKeyboard\
+Value3=C:\Programmi\Mikroelektronika\mikroC\miei\
+[IncludePath]
+Count=0

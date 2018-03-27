@@ -1,0 +1,1173 @@
+_enterPowerSave:
+  begin
+//openKeyboard.c,116 :: 		PORTA = 0;
+	PORTA <- 0
+//openKeyboard.c,117 :: 		INTCON.RBIE = 1; // enables PORTB on-change interrupt
+	INTCON <-  INTCON | 8
+//openKeyboard.c,119 :: 		sleep;
+	asm: sleep;
+  end
+
+_exitPowerSave:
+  begin
+//openKeyboard.c,124 :: 		INTCON.RBIE = 0; // disables PORTB on-change interrupt
+	INTCON <-  INTCON & -9
+  end
+
+_setupUsart:
+  begin
+//openKeyboard.c,128 :: 		switch(br){  // done so, because you can't call USART_Init(variable); but only USART_Init(literal);
+	goto	L_setupUsart_0
+//openKeyboard.c,129 :: 		case BAUDRATE_300:    USART_Init(300);
+L_setupUsart_2:
+	SPBRG <- 207
+	asm: BCF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,130 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,131 :: 		case BAUDRATE_1200:   USART_Init(1200);
+L_setupUsart_3:
+	SPBRG <- 207
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,132 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,133 :: 		case BAUDRATE_2400:   USART_Init(2400);
+L_setupUsart_4:
+	SPBRG <- 103
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,134 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,135 :: 		case BAUDRATE_4800:   USART_Init(4800);
+L_setupUsart_5:
+	SPBRG <- 51
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,136 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,137 :: 		case BAUDRATE_9600:   USART_Init(9600);
+L_setupUsart_6:
+	SPBRG <- 25
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,138 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,139 :: 		case BAUDRATE_19200:  USART_Init(19200);
+L_setupUsart_7:
+	SPBRG <- 12
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,140 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,141 :: 		case BAUDRATE_38400:  USART_Init(38400);
+L_setupUsart_8:
+	SPBRG <- 6
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,142 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,143 :: 		case BAUDRATE_57600:  USART_Init(57600);
+L_setupUsart_9:
+	SPBRG <- 3
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,144 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,145 :: 		case BAUDRATE_115200: USART_Init(115200);
+L_setupUsart_10:
+	SPBRG <- 1
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,146 :: 		break;
+	goto	L_setupUsart_1
+//openKeyboard.c,147 :: 		default: EEprom_write(CONFIG_BAUDRATE, BAUDRATE_4800); // if no config found, set a default 4800
+L_setupUsart_11:
+	FARG_EEprom_write+0 <- 1
+	FARG_EEprom_write+1 <- 4
+	CALL _EEprom_write
+//openKeyboard.c,148 :: 		br = BAUDRATE_4800;
+	FARG_setupUsart+0 <- 4
+//openKeyboard.c,149 :: 		USART_Init(4800);
+	SPBRG <- 51
+	asm: BSF	TXSTA, BRGH
+	CALL _Usart_Init
+//openKeyboard.c,150 :: 		}
+	goto	L_setupUsart_1
+L_setupUsart_0:
+	if ( FARG_setupUsart+0 = 1) then goto L_setupUsart_2
+	if ( FARG_setupUsart+0 = 2) then goto L_setupUsart_3
+	if ( FARG_setupUsart+0 = 3) then goto L_setupUsart_4
+	if ( FARG_setupUsart+0 = 4) then goto L_setupUsart_5
+	if ( FARG_setupUsart+0 = 5) then goto L_setupUsart_6
+	if ( FARG_setupUsart+0 = 6) then goto L_setupUsart_7
+	if ( FARG_setupUsart+0 = 7) then goto L_setupUsart_8
+	if ( FARG_setupUsart+0 = 8) then goto L_setupUsart_9
+	if ( FARG_setupUsart+0 = 9) then goto L_setupUsart_10
+	goto	L_setupUsart_11
+L_setupUsart_1:
+//openKeyboard.c,151 :: 		baudrate = br;
+	_baudrate <- FARG_setupUsart+0
+  end
+
+_turnBacklightOn:
+  begin
+//openKeyboard.c,155 :: 		timer = lightFadeOffTime;
+	_timer <- _lightFadeOffTime
+//openKeyboard.c,156 :: 		if (!pwmRunning) {
+	if (_pwmRunning) then goto L_turnBacklightOn_12
+//openKeyboard.c,157 :: 		PWM1_Start();
+	CALL _PWM1_Start
+//openKeyboard.c,158 :: 		PWM2_Start();
+	CALL _PWM2_Start
+//openKeyboard.c,159 :: 		pwmRunning = 1;
+	_pwmRunning <- 1
+//openKeyboard.c,160 :: 		}
+L_turnBacklightOn_12:
+//openKeyboard.c,161 :: 		PWM1_Change_Duty(lightStrenght);
+	FARG_PWM1_Change_Duty+0 <- _lightStrenght
+	CALL _PWM1_Change_Duty
+//openKeyboard.c,162 :: 		PWM2_Change_Duty(lightStrenght);
+	FARG_PWM2_Change_Duty+0 <- _lightStrenght
+	CALL _PWM2_Change_Duty
+  end
+
+_nop:
+  begin
+  end
+
+_lightFade:
+  begin
+//openKeyboard.c,171 :: 		if (newlyPressd) {
+	if (!_newlyPressd) then goto L_lightFade_13
+//openKeyboard.c,172 :: 		turnBacklightOn();
+	CALL _turnBacklightOn
+//openKeyboard.c,173 :: 		return;
+	return
+//openKeyboard.c,174 :: 		}
+L_lightFade_13:
+//openKeyboard.c,176 :: 		if (timer>0) timer --;
+	if ( _timer <= 0) then goto L_lightFade_14
+	_timer <-  _timer - 1
+	_timer <- _timer
+	goto	L_lightFade_15
+L_lightFade_14:
+//openKeyboard.c,180 :: 		PORTC = 255;
+	PORTC <- 255
+//openKeyboard.c,181 :: 		pwmRunning = 0;
+	_pwmRunning <- 0
+//openKeyboard.c,182 :: 		enterPowerSave();
+	CALL _enterPowerSave
+//openKeyboard.c,183 :: 		}
+L_lightFade_15:
+//openKeyboard.c,185 :: 		if (timer<(~lightStrenght)){
+	STACK_1 <- ~_lightStrenght
+	if ( _timer >= STACK_1) then goto L_lightFade_16
+//openKeyboard.c,186 :: 		PWM1_Change_Duty(~((unsigned char)timer));
+	FARG_PWM1_Change_Duty+0 <- ~_timer
+	FARG_PWM1_Change_Duty+0 <- FARG_PWM1_Change_Duty+0
+	CALL _PWM1_Change_Duty
+//openKeyboard.c,187 :: 		PWM2_Change_Duty(~((unsigned char)timer));
+	FARG_PWM2_Change_Duty+0 <- ~_timer
+	FARG_PWM2_Change_Duty+0 <- FARG_PWM2_Change_Duty+0
+	CALL _PWM2_Change_Duty
+//openKeyboard.c,188 :: 		}
+L_lightFade_16:
+  end
+
+_setupLightMode:
+  begin
+//openKeyboard.c,194 :: 		if (pwmRunning){
+	if (!_pwmRunning) then goto L_setupLightMode_17
+//openKeyboard.c,195 :: 		PWM1_Stop();
+	CALL _PWM1_Stop
+//openKeyboard.c,196 :: 		PWM2_Stop();
+	CALL _PWM2_Stop
+//openKeyboard.c,197 :: 		}
+L_setupLightMode_17:
+//openKeyboard.c,199 :: 		switch (lm){
+	goto	L_setupLightMode_18
+//openKeyboard.c,200 :: 		case LIGHTMODE_ALWAYSOFF: lightHandler = &nop;
+L_setupLightMode_20:
+	_lightHandler <- 0
+//openKeyboard.c,201 :: 		lightStrenght = 0xFF;
+	_lightStrenght <- 255
+//openKeyboard.c,202 :: 		lightMode = LIGHTMODE_ALWAYSOFF;
+	_lightMode <- 0
+//openKeyboard.c,203 :: 		break;
+	goto	L_setupLightMode_19
+//openKeyboard.c,205 :: 		case LIGHTMODE_ALWAYSON:  lightHandler = &nop;
+L_setupLightMode_21:
+	_lightHandler <- 0
+//openKeyboard.c,206 :: 		turnBacklightOn();
+	CALL _turnBacklightOn
+//openKeyboard.c,207 :: 		lightMode = LIGHTMODE_ALWAYSON;
+	_lightMode <- 1
+//openKeyboard.c,208 :: 		break;
+	goto	L_setupLightMode_19
+//openKeyboard.c,210 :: 		case LIGHTMODE_FADE:      lightHandler = &lightFade;
+L_setupLightMode_22:
+	_lightHandler <- 0
+//openKeyboard.c,211 :: 		turnBacklightOn();
+	CALL _turnBacklightOn
+//openKeyboard.c,212 :: 		lightStrenght = 0x80;   // restore middle luminosity
+	_lightStrenght <- 128
+//openKeyboard.c,213 :: 		lightMode = LIGHTMODE_FADE;
+	_lightMode <- 2
+//openKeyboard.c,214 :: 		break;
+	goto	L_setupLightMode_19
+//openKeyboard.c,216 :: 		default                 : EEprom_write(CONFIG_LIGHTMODE, LIGHTMODE_ALWAYSOFF);
+L_setupLightMode_23:
+	FARG_EEprom_write+0 <- 3
+	FARG_EEprom_write+1 <- 0
+	CALL _EEprom_write
+//openKeyboard.c,217 :: 		lightMode = LIGHTMODE_ALWAYSOFF;
+	_lightMode <- 0
+//openKeyboard.c,218 :: 		lightHandler = &nop;
+	_lightHandler <- 0
+//openKeyboard.c,219 :: 		lightStrenght = 0xFF;
+	_lightStrenght <- 255
+//openKeyboard.c,220 :: 		}
+	goto	L_setupLightMode_19
+L_setupLightMode_18:
+	if ( FARG_setupLightMode+0 = 0) then goto L_setupLightMode_20
+	if ( FARG_setupLightMode+0 = 1) then goto L_setupLightMode_21
+	if ( FARG_setupLightMode+0 = 2) then goto L_setupLightMode_22
+	goto	L_setupLightMode_23
+L_setupLightMode_19:
+//openKeyboard.c,222 :: 		PORTC = 255;
+	PORTC <- 255
+//openKeyboard.c,225 :: 		if (lightMode != LIGHTMODE_ALWAYSOFF) {
+	if ( _lightMode = 0) then goto L_setupLightMode_24
+//openKeyboard.c,226 :: 		PWM1_Init(40000);
+	asm: MOVLW	24
+	asm: MOVWF	PR2
+	CALL _PWM1_Init
+//openKeyboard.c,227 :: 		PWM1_Change_Duty(lightStrenght);
+	FARG_PWM1_Change_Duty+0 <- _lightStrenght
+	CALL _PWM1_Change_Duty
+//openKeyboard.c,228 :: 		PWM1_Start();
+	CALL _PWM1_Start
+//openKeyboard.c,230 :: 		PWM2_Init(40000);
+	asm: MOVLW	24
+	asm: MOVWF	PR2
+	CALL _PWM2_Init
+//openKeyboard.c,231 :: 		PWM2_Change_Duty(lightStrenght);
+	FARG_PWM2_Change_Duty+0 <- _lightStrenght
+	CALL _PWM2_Change_Duty
+//openKeyboard.c,232 :: 		PWM2_Start();
+	CALL _PWM2_Start
+//openKeyboard.c,234 :: 		pwmRunning = 1;
+	_pwmRunning <- 1
+//openKeyboard.c,235 :: 		}
+L_setupLightMode_24:
+  end
+
+_doScan:
+  begin
+//openKeyboard.c,239 :: 		unsigned char sc = 0;
+	doScan_sc_L0 <- 0
+//openKeyboard.c,241 :: 		newlyPressd = 0;
+	_newlyPressd <- 0
+//openKeyboard.c,243 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	_AMask <- 1
+L_doScan_25:
+	if ( _AMask >= 128) then goto L_doScan_26
+//openKeyboard.c,245 :: 		oldData[sc] = data[sc]; // save old data
+	STACK_1 <-  0 + doScan_sc_L0
+	FSR <-  0 + doScan_sc_L0
+	STACK_0 <- *FSR
+	*STACK_1 <- STACK_0
+//openKeyboard.c,247 :: 		PORTA = ~AMask; // put a 0 on the line we want to inspect
+	PORTA <- ~_AMask
+	PORTA <- PORTA
+//openKeyboard.c,248 :: 		data[sc] = PORTB;  // read PORTB (pulled up)...if a line goes to 0, bingo!
+	STACK_0 <-  0 + doScan_sc_L0
+	*STACK_0 <- PORTB
+//openKeyboard.c,249 :: 		data[sc] = data[sc] | PORTB; // antibounce
+	STACK_1 <-  0 + doScan_sc_L0
+	STACK_0 <- *STACK_1
+	STACK_0 <-  STACK_0 | PORTB
+	*STACK_1 <- STACK_0
+//openKeyboard.c,250 :: 		data[sc] = data[sc] | PORTB; // antibounce
+	STACK_1 <-  0 + doScan_sc_L0
+	STACK_0 <- *STACK_1
+	STACK_0 <-  STACK_0 | PORTB
+	*STACK_1 <- STACK_0
+//openKeyboard.c,251 :: 		data[sc] = ~data[sc]; // return to positive logic
+	STACK_1 <-  0 + doScan_sc_L0
+	STACK_0 <- *STACK_1
+	STACK_0 <- ~STACK_0
+	*STACK_1 <- STACK_0
+//openKeyboard.c,253 :: 		justPressed[sc] = data[sc]&(~oldData[sc]);
+	STACK_2 <-  0 + doScan_sc_L0
+	FSR <-  0 + doScan_sc_L0
+	STACK_1 <- *FSR
+	FSR <-  0 + doScan_sc_L0
+	STACK_0 <- *FSR
+	STACK_0 <- ~STACK_0
+	STACK_0 <-  STACK_1 & STACK_0
+	*STACK_2 <- STACK_0
+//openKeyboard.c,255 :: 		newlyPressd = newlyPressd | justPressed[sc];
+	FSR <-  0 + doScan_sc_L0
+	STACK_0 <- *FSR
+	_newlyPressd <-  _newlyPressd | STACK_0
+	_newlyPressd <- _newlyPressd
+//openKeyboard.c,257 :: 		sc++;
+	doScan_sc_L0 <-  doScan_sc_L0 + 1
+	doScan_sc_L0 <- doScan_sc_L0
+//openKeyboard.c,258 :: 		}
+L_doScan_27:
+//openKeyboard.c,243 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	STACK_0 <- 1
+	_AMask <-  _AMask shl STACK_0  [Optimized To Dest]
+	_AMask <- _AMask
+//openKeyboard.c,258 :: 		}
+	goto	L_doScan_25
+L_doScan_26:
+  end
+
+_serialSend:
+  begin
+//openKeyboard.c,263 :: 		unsigned char idx = 0;
+	serialSend_idx_L0 <- 0
+//openKeyboard.c,264 :: 		unsigned char sc = 0;
+	serialSend_sc_L0 <- 0
+//openKeyboard.c,266 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	_AMask <- 1
+L_serialSend_28:
+	if ( _AMask >= 128) then goto L_serialSend_29
+//openKeyboard.c,267 :: 		for (BMask=1; BMask<128; BMask<<=1){
+	_BMask <- 1
+L_serialSend_31:
+	if ( _BMask >= 128) then goto L_serialSend_32
+//openKeyboard.c,268 :: 		if (justPressed[sc] & BMask) USART_Write(serialMap[alt][idx]);
+	FSR <-  0 + serialSend_sc_L0
+	STACK_0 <- *FSR
+	STACK_0 <-  STACK_0 & _BMask
+	if (!STACK_0) then goto L_serialSend_34
+	STACK_0 <-  49 * _alt
+	STACK_0 <-  0 + STACK_0
+	STACK_0 <-  STACK_0 + serialSend_idx_L0
+	FARG_Usart_Write+0 <- *STACK_0
+	FARG_Usart_Write+0 <- FARG_Usart_Write+0
+	CALL _Usart_Write
+L_serialSend_34:
+//openKeyboard.c,269 :: 		idx++;
+	serialSend_idx_L0 <-  serialSend_idx_L0 + 1
+	serialSend_idx_L0 <- serialSend_idx_L0
+//openKeyboard.c,270 :: 		}
+L_serialSend_33:
+//openKeyboard.c,267 :: 		for (BMask=1; BMask<128; BMask<<=1){
+	STACK_0 <- 1
+	_BMask <-  _BMask shl STACK_0  [Optimized To Dest]
+	_BMask <- _BMask
+//openKeyboard.c,270 :: 		}
+	goto	L_serialSend_31
+L_serialSend_32:
+//openKeyboard.c,271 :: 		sc++;
+	serialSend_sc_L0 <-  serialSend_sc_L0 + 1
+	serialSend_sc_L0 <- serialSend_sc_L0
+//openKeyboard.c,272 :: 		}
+L_serialSend_30:
+//openKeyboard.c,266 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	STACK_0 <- 1
+	_AMask <-  _AMask shl STACK_0  [Optimized To Dest]
+	_AMask <- _AMask
+//openKeyboard.c,272 :: 		}
+	goto	L_serialSend_28
+L_serialSend_29:
+//openKeyboard.c,273 :: 		alt = alts[data[2]&1|((data[1]&1)<<1)|((data[0]&64)>>4)]; // next scan can use alt retrieved here
+	STACK_4 <-  _data+2 & 1
+	STACK_3 <-  _data+1 & 1
+	STACK_2 <- 1
+	STACK_0 <-  STACK_3 shl STACK_2
+	STACK_4 <-  STACK_4 | STACK_0
+	STACK_3 <-  _data & 64
+	STACK_2 <- 4
+	STACK_0 <-  STACK_3 shr STACK_2
+	STACK_0 <-  STACK_4 | STACK_0
+	FSR <-  0 + STACK_0
+	_alt <- *FSR
+	_alt <- _alt
+  end
+
+_scanSend:
+  begin
+//openKeyboard.c,277 :: 		unsigned char idx = 0;
+	scanSend_idx_L0 <- 0
+//openKeyboard.c,278 :: 		unsigned char sc = 0;
+	scanSend_sc_L0 <- 0
+//openKeyboard.c,279 :: 		unsigned char bs = 0;
+	scanSend_bs_L0 <- 0
+//openKeyboard.c,281 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	_AMask <- 1
+L_scanSend_35:
+	if ( _AMask >= 128) then goto L_scanSend_36
+//openKeyboard.c,282 :: 		somethingChanged = data[sc] ^ oldData[sc];
+	FSR <-  0 + scanSend_sc_L0
+	_somethingChanged <- *FSR
+	FSR <-  0 + scanSend_sc_L0
+	STACK_0 <- *FSR
+	_somethingChanged <-  _somethingChanged ^ STACK_0
+	_somethingChanged <- _somethingChanged
+//openKeyboard.c,283 :: 		bs = 0;
+	scanSend_bs_L0 <- 0
+//openKeyboard.c,284 :: 		for (BMask=1; BMask<128; BMask<<=1){
+	_BMask <- 1
+L_scanSend_38:
+	if ( _BMask >= 128) then goto L_scanSend_39
+//openKeyboard.c,285 :: 		if (someThingChanged & BMask)
+	STACK_0 <-  _somethingChanged & _BMask
+	if (!STACK_0) then goto L_scanSend_41
+//openKeyboard.c,286 :: 		USART_Write(scanMap[idx] | (((data[sc]&BMask)>>bs)<<6)); // | 64 if pressed
+	STACK_0 <-  0 + scanSend_idx_L0
+	FARG_Usart_Write+0 <- *STACK_0
+	FSR <-  0 + scanSend_sc_L0
+	STACK_0 <- *FSR
+	STACK_2 <-  STACK_0 & _BMask
+	STACK_0 <- scanSend_bs_L0
+	STACK_3 <-  STACK_2 shr STACK_0
+	STACK_2 <- 6
+	STACK_0 <-  STACK_3 shl STACK_2  [Optimized To Dest]
+	FARG_Usart_Write+0 <-  FARG_Usart_Write+0 | STACK_0  [Optimized To Dest]
+	FARG_Usart_Write+0 <- FARG_Usart_Write+0
+	CALL _Usart_Write
+L_scanSend_41:
+//openKeyboard.c,287 :: 		bs++;
+	scanSend_bs_L0 <-  scanSend_bs_L0 + 1
+	scanSend_bs_L0 <- scanSend_bs_L0
+//openKeyboard.c,288 :: 		idx++;
+	scanSend_idx_L0 <-  scanSend_idx_L0 + 1
+	scanSend_idx_L0 <- scanSend_idx_L0
+//openKeyboard.c,289 :: 		}
+L_scanSend_40:
+//openKeyboard.c,284 :: 		for (BMask=1; BMask<128; BMask<<=1){
+	STACK_0 <- 1
+	_BMask <-  _BMask shl STACK_0  [Optimized To Dest]
+	_BMask <- _BMask
+//openKeyboard.c,289 :: 		}
+	goto	L_scanSend_38
+L_scanSend_39:
+//openKeyboard.c,290 :: 		sc++;
+	scanSend_sc_L0 <-  scanSend_sc_L0 + 1
+	scanSend_sc_L0 <- scanSend_sc_L0
+//openKeyboard.c,291 :: 		}
+L_scanSend_37:
+//openKeyboard.c,281 :: 		for (AMask=1; AMask<128; AMask<<=1){
+	STACK_0 <- 1
+	_AMask <-  _AMask shl STACK_0  [Optimized To Dest]
+	_AMask <- _AMask
+//openKeyboard.c,291 :: 		}
+	goto	L_scanSend_35
+L_scanSend_36:
+  end
+
+_ps2Send:
+  begin
+  end
+
+_setupSendMode:
+  begin
+//openKeyboard.c,299 :: 		switch (sm){
+	goto	L_setupSendMode_42
+//openKeyboard.c,300 :: 		case SENDMODE_SCAN  : send = &scanSend;
+L_setupSendMode_44:
+	_send <- 0
+//openKeyboard.c,301 :: 		sendMode = SENDMODE_SCAN;
+	_sendMode <- 1
+//openKeyboard.c,302 :: 		break;
+	goto	L_setupSendMode_43
+//openKeyboard.c,304 :: 		case SENDMODE_SERIAL: send = &serialSend;
+L_setupSendMode_45:
+	_send <- 0
+//openKeyboard.c,305 :: 		sendMode = SENDMODE_SERIAL;
+	_sendMode <- 0
+//openKeyboard.c,306 :: 		break;
+	goto	L_setupSendMode_43
+//openKeyboard.c,312 :: 		default             : send = &serialSend;
+L_setupSendMode_46:
+	_send <- 0
+//openKeyboard.c,313 :: 		EEprom_write(CONFIG_SENDMODE, SENDMODE_SERIAL);
+	FARG_EEprom_write+0 <- 2
+	FARG_EEprom_write+1 <- 0
+	CALL _EEprom_write
+//openKeyboard.c,314 :: 		sendMode = SENDMODE_SERIAL;
+	_sendMode <- 0
+//openKeyboard.c,315 :: 		}
+	goto	L_setupSendMode_43
+L_setupSendMode_42:
+	if ( FARG_setupSendMode+0 = 1) then goto L_setupSendMode_44
+	if ( FARG_setupSendMode+0 = 0) then goto L_setupSendMode_45
+	goto	L_setupSendMode_46
+L_setupSendMode_43:
+  end
+
+_config:
+  begin
+//openKeyboard.c,319 :: 		timer = lightFadeOffTime;
+	_timer <- _lightFadeOffTime
+//openKeyboard.c,321 :: 		if ((data[1]&4)&&(lightStrenght<0xff)) {   // <
+	if () then goto L_config_49
+	if ( _lightStrenght >= 255) then goto L_config_49
+L352_ex_L_config_49:
+//openKeyboard.c,322 :: 		lightStrenght++;
+	_lightStrenght <-  _lightStrenght + 1
+	_lightStrenght <- _lightStrenght
+//openKeyboard.c,323 :: 		PWM1_Change_Duty(lightStrenght);
+	FARG_PWM1_Change_Duty+0 <- _lightStrenght
+	CALL _PWM1_Change_Duty
+//openKeyboard.c,324 :: 		PWM2_Change_Duty(lightStrenght);
+	FARG_PWM2_Change_Duty+0 <- _lightStrenght
+	CALL _PWM2_Change_Duty
+//openKeyboard.c,325 :: 		if (lightMode==LIGHTMODE_ALWAYSOFF) lightMode = LIGHTMODE_FADE;
+	if ( _lightMode != 0) then goto L_config_50
+	_lightMode <- 2
+L_config_50:
+//openKeyboard.c,326 :: 		}  // decrease light strenght
+L_config_49:
+//openKeyboard.c,328 :: 		if ((data[1]&64)&&(lightStrenght>0)) {   // >
+	if () then goto L_config_53
+	if ( _lightStrenght <= 0) then goto L_config_53
+L374_ex_L_config_53:
+//openKeyboard.c,329 :: 		lightStrenght--;
+	_lightStrenght <-  _lightStrenght - 1
+	_lightStrenght <- _lightStrenght
+//openKeyboard.c,330 :: 		PWM1_Change_Duty(lightStrenght);
+	FARG_PWM1_Change_Duty+0 <- _lightStrenght
+	CALL _PWM1_Change_Duty
+//openKeyboard.c,331 :: 		PWM2_Change_Duty(lightStrenght);
+	FARG_PWM2_Change_Duty+0 <- _lightStrenght
+	CALL _PWM2_Change_Duty
+//openKeyboard.c,332 :: 		if (lightMode==LIGHTMODE_ALWAYSOFF) lightMode = LIGHTMODE_FADE;
+	if ( _lightMode != 0) then goto L_config_54
+	_lightMode <- 2
+L_config_54:
+//openKeyboard.c,333 :: 		} // increase light strenght
+L_config_53:
+//openKeyboard.c,336 :: 		if (justPressed[5]&1){ // 1
+	STACK_0 <-  _justPressed+5 & 1
+	if (!STACK_0) then goto L_config_55
+//openKeyboard.c,340 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,341 :: 		lightFadeOffTime = 2<<8;
+	_lightFadeOffTime <- 512
+//openKeyboard.c,343 :: 		}
+L_config_55:
+//openKeyboard.c,345 :: 		if (justPressed[5]&2){ // 2
+	if () then goto L_config_56
+//openKeyboard.c,346 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_58
+//openKeyboard.c,347 :: 		;//setupUsart(BAUDRATE_300);     //all setupUsart commented out are to save code words space...otherwise i'm running into demo limit
+L_config_57:
+//openKeyboard.c,349 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,350 :: 		lightFadeOffTime = 4<<8;  // more or less 5 sec
+	_lightFadeOffTime <- 1024
+//openKeyboard.c,351 :: 		}
+L_config_58:
+//openKeyboard.c,352 :: 		}
+L_config_56:
+//openKeyboard.c,354 :: 		if (justPressed[5]&4){ // 3
+	if () then goto L_config_59
+//openKeyboard.c,355 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_61
+//openKeyboard.c,356 :: 		;//setupUsart(BAUDRATE_1200);
+L_config_60:
+//openKeyboard.c,358 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,359 :: 		lightFadeOffTime = 8<<8;
+	_lightFadeOffTime <- 2048
+//openKeyboard.c,360 :: 		}
+L_config_61:
+//openKeyboard.c,361 :: 		}
+L_config_59:
+//openKeyboard.c,363 :: 		if (justPressed[5]&16){ // 4
+	if () then goto L_config_62
+//openKeyboard.c,364 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_64
+//openKeyboard.c,365 :: 		;//setupUsart(BAUDRATE_2400);
+L_config_63:
+//openKeyboard.c,367 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,368 :: 		lightFadeOffTime = 16<<8;
+	_lightFadeOffTime <- 4096
+//openKeyboard.c,369 :: 		}
+L_config_64:
+//openKeyboard.c,370 :: 		}
+L_config_62:
+//openKeyboard.c,372 :: 		if (justPressed[5]&8){ // 5
+	if () then goto L_config_65
+//openKeyboard.c,373 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (!STACK_0) then goto L_config_66
+//openKeyboard.c,374 :: 		setupUsart(BAUDRATE_4800);
+	FARG_setupUsart+0 <- 4
+	CALL _setupUsart
+	goto	L_config_67
+L_config_66:
+//openKeyboard.c,376 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,377 :: 		lightFadeOffTime = 32<<8;
+	_lightFadeOffTime <- 8192
+//openKeyboard.c,378 :: 		}
+L_config_67:
+//openKeyboard.c,379 :: 		}
+L_config_65:
+//openKeyboard.c,381 :: 		if (justPressed[5]&32){ // 6
+	if () then goto L_config_68
+//openKeyboard.c,382 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (!STACK_0) then goto L_config_69
+//openKeyboard.c,383 :: 		setupUsart(BAUDRATE_9600);
+	FARG_setupUsart+0 <- 5
+	CALL _setupUsart
+	goto	L_config_70
+L_config_69:
+//openKeyboard.c,385 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,386 :: 		lightFadeOffTime = 64<<8;
+	_lightFadeOffTime <- 16384
+//openKeyboard.c,387 :: 		}
+L_config_70:
+//openKeyboard.c,388 :: 		}
+L_config_68:
+//openKeyboard.c,390 :: 		if (justPressed[5]&64){ // 7
+	if () then goto L_config_71
+//openKeyboard.c,391 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_73
+//openKeyboard.c,392 :: 		;//setupUsart(BAUDRATE_19200);
+L_config_72:
+//openKeyboard.c,394 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,395 :: 		lightFadeOffTime = 128<<8;
+	_lightFadeOffTime <- 32768
+//openKeyboard.c,396 :: 		}
+L_config_73:
+//openKeyboard.c,397 :: 		}
+L_config_71:
+//openKeyboard.c,399 :: 		if (justPressed[0]&1){ // 8
+	STACK_0 <-  _justPressed & 1
+	if (!STACK_0) then goto L_config_74
+//openKeyboard.c,400 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_76
+//openKeyboard.c,401 :: 		;//setupUsart(BAUDRATE_38400);
+L_config_75:
+//openKeyboard.c,403 :: 		setupLightMode(LIGHTMODE_FADE);
+	FARG_setupLightMode+0 <- 2
+	CALL _setupLightMode
+//openKeyboard.c,404 :: 		lightFadeOffTime = 255<<8;
+	_lightFadeOffTime <- 65280
+//openKeyboard.c,405 :: 		}
+L_config_76:
+//openKeyboard.c,406 :: 		}
+L_config_74:
+//openKeyboard.c,408 :: 		if (justPressed[0]&2){ // 9
+	if () then goto L_config_77
+//openKeyboard.c,409 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_79
+//openKeyboard.c,410 :: 		;//setupUsart(BAUDRATE_57600);
+L_config_78:
+//openKeyboard.c,412 :: 		setupLightMode(LIGHTMODE_ALWAYSON);
+	FARG_setupLightMode+0 <- 1
+	CALL _setupLightMode
+L_config_79:
+//openKeyboard.c,413 :: 		}
+L_config_77:
+//openKeyboard.c,415 :: 		if (justPressed[0]&4){ // 0
+	if () then goto L_config_80
+//openKeyboard.c,416 :: 		if (data[1]&1)
+	STACK_0 <-  _data+1 & 1
+	if (STACK_0) then goto L_config_82
+//openKeyboard.c,417 :: 		;//setupUsart(BAUDRATE_115200);
+L_config_81:
+//openKeyboard.c,419 :: 		setupLightMode(LIGHTMODE_ALWAYSOFF);
+	FARG_setupLightMode+0 <- 0
+	CALL _setupLightMode
+L_config_82:
+//openKeyboard.c,420 :: 		}
+L_config_80:
+//openKeyboard.c,422 :: 		if (justPressed[3]&1){ // A
+	STACK_0 <-  _justPressed+3 & 1
+	if (!STACK_0) then goto L_config_83
+//openKeyboard.c,423 :: 		setupSendMode(SENDMODE_SCAN);
+	FARG_setupSendMode+0 <- 1
+	CALL _setupSendMode
+//openKeyboard.c,424 :: 		}
+L_config_83:
+//openKeyboard.c,426 :: 		if (justPressed[3]&2){ // S
+	if () then goto L_config_84
+//openKeyboard.c,427 :: 		setupSendMode(SENDMODE_SERIAL);
+	FARG_setupSendMode+0 <- 0
+	CALL _setupSendMode
+//openKeyboard.c,428 :: 		}
+L_config_84:
+//openKeyboard.c,430 :: 		Delay_5ms();
+	CALL _Delay_5ms
+  end
+
+_saveConfig:
+  begin
+//openKeyboard.c,435 :: 		EEprom_write(CONFIG_BAUDRATE, baudrate);
+	FARG_EEprom_write+0 <- 1
+	FARG_EEprom_write+1 <- _baudrate
+	CALL _EEprom_write
+//openKeyboard.c,436 :: 		EEprom_write(CONFIG_SENDMODE, sendMode);
+	FARG_EEprom_write+0 <- 2
+	FARG_EEprom_write+1 <- _sendMode
+	CALL _EEprom_write
+//openKeyboard.c,437 :: 		EEprom_write(CONFIG_LIGHTMODE, lightMode);
+	FARG_EEprom_write+0 <- 3
+	FARG_EEprom_write+1 <- _lightMode
+	CALL _EEprom_write
+//openKeyboard.c,438 :: 		EEprom_write(CONFIG_LIGHTSTRENGTH, lightStrenght);
+	FARG_EEprom_write+0 <- 4
+	FARG_EEprom_write+1 <- _lightStrenght
+	CALL _EEprom_write
+//openKeyboard.c,439 :: 		EEprom_write(CONFIG_LIGHTFADEOFFTIME, lightFadeOffTime>>8);
+	FARG_EEprom_write+0 <- 5
+	STACK_4 <- 8
+	STACK_0 <-  _lightFadeOffTime shr STACK_4
+	FARG_EEprom_write+1 <- STACK_0
+	CALL _EEprom_write
+  end
+
+_interrupt:
+  begin
+//openKeyboard.c,443 :: 		if (INTCON.RBIF) { // SOMETHING CHANGED ON PORTB...
+	if (!INTCON) then goto L_interrupt_85
+//openKeyboard.c,444 :: 		exitPowerSave(); // just wakeup and so some scanning...
+	CALL _exitPowerSave
+//openKeyboard.c,445 :: 		INTCON.RBIF = 0; // clear intr flag
+	INTCON <-  INTCON & -2
+//openKeyboard.c,446 :: 		}
+L_interrupt_85:
+  end
+
+_main:
+  begin
+//openKeyboard.c,455 :: 		OSCCON = 0x67;                    // 01100111 - 0110 stands for 4Mhz internal clock
+	OSCCON <- 103
+//openKeyboard.c,457 :: 		ANSEL  = 0;                       // Configure AN pins as digital I/O
+	ANSEL <- 0
+//openKeyboard.c,458 :: 		ANSELH = 0;
+	ANSELH <- 0
+//openKeyboard.c,460 :: 		PORTA  = 0;                       // init port A
+	PORTA <- 0
+//openKeyboard.c,461 :: 		TRISA  = 0;                       // 1 = input
+	TRISA <- 0
+//openKeyboard.c,463 :: 		PORTB       = 0;                  // initialize PORTB
+	PORTB <- 0
+//openKeyboard.c,464 :: 		TRISB       = 255;                // designate PORTB as all input
+	TRISB <- 255
+//openKeyboard.c,466 :: 		PORTC       = 0;                // initialize PORTC
+	PORTC <- 0
+//openKeyboard.c,467 :: 		TRISC       = 0;                // designate PORTB 0-7 as output
+	TRISC <- 0
+//openKeyboard.c,469 :: 		OPTION_REG  = 0;                  // pull-ups enabled on PORTB....no external pull-downs
+	OPTION_REG <- 0
+//openKeyboard.c,474 :: 		INTCON.RBIE = 0; // disables PORTB on-change interrupt
+	INTCON <-  INTCON & -9
+//openKeyboard.c,475 :: 		INTCON.RBIF = 0; // clear PORTB mismatch values
+	INTCON <-  INTCON & -2
+//openKeyboard.c,477 :: 		IOCB = 127; // pin 0-6 of PORTB configured to raise interrupt when changed
+	IOCB <- 127
+//openKeyboard.c,479 :: 		PIE1 = 32; // RCIE = 1; enables EUSART on-receive interrupt
+	PIE1 <- 32
+//openKeyboard.c,481 :: 		INTCON.GIE = 1; // Global Interrupt Enable/disable
+	INTCON <-  INTCON | 128
+//openKeyboard.c,484 :: 		Delay_ms(20);    // required for eeprom_read to work correctly
+	asm: MOVLW	26
+	asm: MOVWF	STACK_11
+	asm: MOVLW	255
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_11,F
+	asm: GOTO	$+2
+	asm: GOTO	$+4
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: GOTO	$-5
+	asm: MOVLW	231
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: nop
+//openKeyboard.c,485 :: 		sendMode = EEprom_read(CONFIG_SENDMODE);
+	FARG_EEprom_read+0 <- 2
+	CALL _EEprom_read
+	_sendMode <- STACK_0
+//openKeyboard.c,486 :: 		setupSendMode(sendMode);
+	FARG_setupSendMode+0 <- STACK_0
+	CALL _setupSendMode
+//openKeyboard.c,490 :: 		Delay_ms(20);    // required for eeprom_read to work correctly
+	asm: MOVLW	26
+	asm: MOVWF	STACK_11
+	asm: MOVLW	255
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_11,F
+	asm: GOTO	$+2
+	asm: GOTO	$+4
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: GOTO	$-5
+	asm: MOVLW	231
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: nop
+//openKeyboard.c,491 :: 		baudrate = EEprom_read(CONFIG_BAUDRATE);
+	FARG_EEprom_read+0 <- 1
+	CALL _EEprom_read
+	_baudrate <- STACK_0
+//openKeyboard.c,492 :: 		setupUsart(baudrate); // Initalize USART (xxxx baud rate, 1 stop bit, no parity...)
+	FARG_setupUsart+0 <- STACK_0
+	CALL _setupUsart
+//openKeyboard.c,495 :: 		Delay_ms(20);    // required for eeprom_read to work correctly
+	asm: MOVLW	26
+	asm: MOVWF	STACK_11
+	asm: MOVLW	255
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_11,F
+	asm: GOTO	$+2
+	asm: GOTO	$+4
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: GOTO	$-5
+	asm: MOVLW	231
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: nop
+//openKeyboard.c,496 :: 		lightFadeOffTime = EEprom_read(CONFIG_LIGHTFADEOFFTIME) << 8;
+	FARG_EEprom_read+0 <- 5
+	CALL _EEprom_read
+	STACK_1 <- 8
+	_lightFadeOffTime <-  STACK_0 shl STACK_1
+	_lightFadeOffTime <- _lightFadeOffTime
+//openKeyboard.c,497 :: 		lightStrenght = EEprom_read(CONFIG_LIGHTSTRENGTH);
+	FARG_EEprom_read+0 <- 4
+	CALL _EEprom_read
+	_lightStrenght <- STACK_0
+//openKeyboard.c,499 :: 		Delay_ms(20);    // required for eeprom_read to work correctly
+	asm: MOVLW	26
+	asm: MOVWF	STACK_11
+	asm: MOVLW	255
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_11,F
+	asm: GOTO	$+2
+	asm: GOTO	$+4
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: GOTO	$-5
+	asm: MOVLW	231
+	asm: MOVWF	STACK_10
+	asm: DECFSZ	STACK_10,F
+	asm: GOTO	$-1
+	asm: nop
+//openKeyboard.c,500 :: 		lightMode = EEprom_read(CONFIG_LIGHTMODE);
+	FARG_EEprom_read+0 <- 3
+	CALL _EEprom_read
+	_lightMode <- STACK_0
+//openKeyboard.c,501 :: 		setUpLightMode(lightMode);
+	FARG_setupLightMode+0 <- STACK_0
+	CALL _setupLightMode
+//openKeyboard.c,503 :: 		do {
+L_main_86:
+//openKeyboard.c,505 :: 		doScan();
+	CALL _doScan
+//openKeyboard.c,507 :: 		if (data[1]&2) {
+	if () then goto L_main_88
+//openKeyboard.c,508 :: 		config();  // people button pressed -> config mode
+	CALL _config
+//openKeyboard.c,509 :: 		}else{
+	goto	L_main_89
+L_main_88:
+//openKeyboard.c,510 :: 		if (oldData[1]&2) saveConfig(); // ppl btn just released... save config
+	if () then goto L_main_90
+	CALL _saveConfig
+L_main_90:
+//openKeyboard.c,511 :: 		send();
+	CALL (*_send)
+//openKeyboard.c,512 :: 		}
+L_main_89:
+//openKeyboard.c,513 :: 		lightHandler();
+	CALL (*_lightHandler)
+//openKeyboard.c,514 :: 		Delay_80us(); // without this delay, pic hangs on sleep...
+	CALL _Delay_80us
+//openKeyboard.c,515 :: 		} while (1);                   // endless loop
+	goto	L_main_86
+  end
+
+table___scanMap:
+  begin
+//openKeyboard.c,39 :: 		const char scanMap[50] = {      // i could output directly idx,
+	asm: RETLW	8
+	asm: RETLW	9
+	asm: RETLW	10
+	asm: RETLW	40
+	asm: RETLW	20
+	asm: RETLW	30
+	asm: RETLW	47
+	asm: RETLW	41
+	asm: RETLW	42
+	asm: RETLW	43
+	asm: RETLW	39
+	asm: RETLW	44
+	asm: RETLW	38
+	asm: RETLW	45
+	asm: RETLW	31
+	asm: RETLW	32
+	asm: RETLW	33
+	asm: RETLW	35
+	asm: RETLW	34
+	asm: RETLW	36
+	asm: RETLW	37
+	asm: RETLW	21
+	asm: RETLW	22
+	asm: RETLW	23
+	asm: RETLW	25
+	asm: RETLW	24
+	asm: RETLW	26
+	asm: RETLW	27
+	asm: RETLW	11
+	asm: RETLW	12
+	asm: RETLW	13
+	asm: RETLW	15
+	asm: RETLW	14
+	asm: RETLW	16
+	asm: RETLW	17
+	asm: RETLW	1
+	asm: RETLW	2
+	asm: RETLW	3
+	asm: RETLW	5
+	asm: RETLW	4
+	asm: RETLW	6
+	asm: RETLW	7
+	asm: RETLW	28
+	asm: RETLW	18
+	asm: RETLW	19
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	29
+	asm: RETLW	46
+	asm: RETLW	0
+  end
+
+table___serialMap:
+  begin
+//openKeyboard.c,48 :: 		const char serialMap[4][49] = { // CHARACTER MAPPING MATRIX for "pure serial mode"
+	asm: RETLW	56
+	asm: RETLW	57
+	asm: RETLW	48
+	asm: RETLW	13
+	asm: RETLW	112
+	asm: RETLW	44
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	46
+	asm: RETLW	32
+	asm: RETLW	109
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	122
+	asm: RETLW	120
+	asm: RETLW	118
+	asm: RETLW	99
+	asm: RETLW	98
+	asm: RETLW	110
+	asm: RETLW	97
+	asm: RETLW	115
+	asm: RETLW	100
+	asm: RETLW	103
+	asm: RETLW	102
+	asm: RETLW	104
+	asm: RETLW	106
+	asm: RETLW	113
+	asm: RETLW	119
+	asm: RETLW	101
+	asm: RETLW	116
+	asm: RETLW	114
+	asm: RETLW	121
+	asm: RETLW	117
+	asm: RETLW	49
+	asm: RETLW	50
+	asm: RETLW	51
+	asm: RETLW	53
+	asm: RETLW	52
+	asm: RETLW	54
+	asm: RETLW	55
+	asm: RETLW	107
+	asm: RETLW	105
+	asm: RETLW	111
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	108
+	asm: RETLW	8
+	asm: RETLW	56
+	asm: RETLW	57
+	asm: RETLW	48
+	asm: RETLW	13
+	asm: RETLW	80
+	asm: RETLW	44
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	46
+	asm: RETLW	32
+	asm: RETLW	77
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	90
+	asm: RETLW	88
+	asm: RETLW	86
+	asm: RETLW	67
+	asm: RETLW	66
+	asm: RETLW	78
+	asm: RETLW	65
+	asm: RETLW	83
+	asm: RETLW	68
+	asm: RETLW	71
+	asm: RETLW	70
+	asm: RETLW	72
+	asm: RETLW	74
+	asm: RETLW	81
+	asm: RETLW	87
+	asm: RETLW	69
+	asm: RETLW	84
+	asm: RETLW	82
+	asm: RETLW	89
+	asm: RETLW	85
+	asm: RETLW	49
+	asm: RETLW	50
+	asm: RETLW	51
+	asm: RETLW	53
+	asm: RETLW	52
+	asm: RETLW	54
+	asm: RETLW	55
+	asm: RETLW	75
+	asm: RETLW	73
+	asm: RETLW	79
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	76
+	asm: RETLW	8
+	asm: RETLW	56
+	asm: RETLW	57
+	asm: RETLW	48
+	asm: RETLW	13
+	asm: RETLW	41
+	asm: RETLW	58
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	63
+	asm: RETLW	32
+	asm: RETLW	62
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	96
+	asm: RETLW	39
+	asm: RETLW	45
+	asm: RETLW	187
+	asm: RETLW	124
+	asm: RETLW	60
+	asm: RETLW	126
+	asm: RETLW	154
+	asm: RETLW	123
+	asm: RETLW	168
+	asm: RETLW	125
+	asm: RETLW	47
+	asm: RETLW	39
+	asm: RETLW	33
+	asm: RETLW	64
+	asm: RETLW	128
+	asm: RETLW	37
+	asm: RETLW	35
+	asm: RETLW	94
+	asm: RETLW	38
+	asm: RETLW	49
+	asm: RETLW	50
+	asm: RETLW	51
+	asm: RETLW	53
+	asm: RETLW	52
+	asm: RETLW	54
+	asm: RETLW	55
+	asm: RETLW	91
+	asm: RETLW	42
+	asm: RETLW	40
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	93
+	asm: RETLW	8
+	asm: RETLW	56
+	asm: RETLW	57
+	asm: RETLW	48
+	asm: RETLW	13
+	asm: RETLW	61
+	asm: RETLW	59
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	191
+	asm: RETLW	32
+	asm: RETLW	181
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	230
+	asm: RETLW	156
+	asm: RETLW	95
+	asm: RETLW	231
+	asm: RETLW	43
+	asm: RETLW	241
+	asm: RETLW	225
+	asm: RETLW	223
+	asm: RETLW	240
+	asm: RETLW	165
+	asm: RETLW	163
+	asm: RETLW	92
+	asm: RETLW	34
+	asm: RETLW	161
+	asm: RETLW	229
+	asm: RETLW	232
+	asm: RETLW	254
+	asm: RETLW	36
+	asm: RETLW	253
+	asm: RETLW	249
+	asm: RETLW	49
+	asm: RETLW	50
+	asm: RETLW	51
+	asm: RETLW	53
+	asm: RETLW	52
+	asm: RETLW	54
+	asm: RETLW	55
+	asm: RETLW	169
+	asm: RETLW	236
+	asm: RETLW	242
+	asm: RETLW	0
+	asm: RETLW	0
+	asm: RETLW	248
+	asm: RETLW	8
+  end
+
+GlobalIniopenKeyboard:
+  begin
+  end
+
